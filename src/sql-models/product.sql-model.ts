@@ -22,8 +22,9 @@ export const SqlProductModel = {
     id: number,
     product: Partial<{ name: string; price: number; categoryId: number }>
   ) {
-    const fields = [];
-    const values = [];
+    const fields = []; // ['name = ?', 'price = ?', 'categoryId = ?']
+    // name = ?, price = ?, categoryId = ?
+    const values = []; // ['ram',99, 1]
     if (product.name !== undefined) {
       fields.push("name = ?");
       values.push(product.name);
@@ -37,6 +38,8 @@ export const SqlProductModel = {
       values.push(product.categoryId);
     }
     if (!fields.length) return undefined;
+
+    // UPDATE products SET name = ?, price = ?, categoryId= ? where id= 5
     await pool.query(`UPDATE products SET ${fields.join(", ")} WHERE id = ?`, [
       ...values,
       id,

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { ProductModel } from "../models/product.model";
+import { SqlProductModel } from "../sql-models/product.sql-model";
 
 // Simple validation helper
 function validateProductInput(body: any) {
@@ -15,8 +16,9 @@ function validateProductInput(body: any) {
   return null;
 }
 
-export const getAllProducts = (req: Request, res: Response) => {
-  res.json(ProductModel.getAll());
+export const getAllProducts = async (req: Request, res: Response) => {
+  const products = await SqlProductModel.getAll();
+  res.json(products);
 };
 
 export const getProductById = (req: Request, res: Response) => {
