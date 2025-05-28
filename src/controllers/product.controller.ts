@@ -21,9 +21,9 @@ export const getAllProducts = async (req: Request, res: Response) => {
   res.json(products);
 };
 
-export const getProductById = (req: Request, res: Response) => {
+export const getProductById = async (req: Request, res: Response) => {
   const id = Number(req.params.id);
-  const product = ProductModel.getById(id);
+  const product = await SqlProductModel.getById(id);
   if (!product) {
     res.status(404).json({ message: "Product not found" });
     return;
@@ -31,7 +31,7 @@ export const getProductById = (req: Request, res: Response) => {
   res.json(product);
 };
 
-export const createProduct = (
+export const createProduct = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -42,20 +42,20 @@ export const createProduct = (
     return;
   }
   try {
-    const product = ProductModel.create(req.body);
+    const product = await SqlProductModel.create(req.body);
     res.status(201).json(product);
   } catch (err) {
     next(err);
   }
 };
 
-export const updateProduct = (
+export const updateProduct = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   const id = Number(req.params.id);
-  const product = ProductModel.getById(id);
+  const product = await SqlProductModel.getById(id);
   if (!product) {
     res.status(404).json({ message: "Product not found" });
     return;
@@ -66,20 +66,20 @@ export const updateProduct = (
     return;
   }
   try {
-    const updated = ProductModel.update(id, req.body);
+    const updated = await SqlProductModel.update(id, req.body);
     res.json(updated);
   } catch (err) {
     next(err);
   }
 };
 
-export const deleteProduct = (
+export const deleteProduct = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   const id = Number(req.params.id);
-  const deleted = ProductModel.delete(id);
+  const deleted = await SqlProductModel.delete(id);
   if (!deleted) {
     res.status(404).json({ message: "Product not found" });
     return;
