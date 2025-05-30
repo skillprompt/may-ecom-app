@@ -1,15 +1,24 @@
 import pool from "./mysql-client";
 
+type Product = {
+  id: number;
+  name: string;
+  price: number;
+  categoryId: number;
+};
+
 export const SqlProductModel = {
-  async getAll() {
+  async getAll(): Promise<Product[]> {
     const [rows] = await pool.query("SELECT * FROM products");
-    return rows;
+    return rows as Product[];
   },
-  async getById(id: number) {
+  async getById(id: number): Promise<Product | undefined> {
     const [rows] = await pool.query("SELECT * FROM products WHERE id = ?", [
       id,
     ]);
-    return Array.isArray(rows) && rows.length ? rows[0] : undefined;
+    return Array.isArray(rows) && rows.length
+      ? (rows[0] as Product)
+      : undefined;
   },
   async create(product: { name: string; price: number; categoryId: number }) {
     const [result]: any = await pool.query(

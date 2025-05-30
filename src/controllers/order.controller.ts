@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { OrderModel } from "../models/order.model";
 import { UserModel } from "../models/user.model";
 import { ProductModel } from "../models/product.model";
+import { SqlOrderModel } from "../sql-models/order.sql-model";
 
 function validateOrderInput(body: any) {
   if (typeof body.userId !== "number") {
@@ -37,7 +38,7 @@ export const getOrderById = (req: Request, res: Response) => {
   res.json(order);
 };
 
-export const createOrder = (
+export const createOrder = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -48,7 +49,7 @@ export const createOrder = (
     return;
   }
   try {
-    const order = OrderModel.create(req.body);
+    const order = await SqlOrderModel.create(req.body);
     res.status(201).json(order);
   } catch (err) {
     next(err);

@@ -1,4 +1,5 @@
 import pool from "./mysql-client";
+import { SqlProductModel } from "./product.sql-model";
 
 export const SqlOrderModel = {
   async getAll() {
@@ -25,9 +26,23 @@ export const SqlOrderModel = {
     const conn = await pool.getConnection();
     try {
       await conn.beginTransaction();
+
+      let totalAmount = 0;
+
+      for (const productId of order.productIds) {
+        const product = await SqlProductModel.getById(productId);
+
+        if (!product) {
+          throw new Error("product not found");
+        }
+
+        const amount = product.price;
+        totalAmount += amount;
+      }
+
       const [result]: any = await conn.query(
-        "INSERT INTO orders (userId) VALUES (?)",
-        [order.userId]
+        "INSERT INTO orders (userId, total_amount) VALUES (?, ?)",
+        [order.userId, totalAmount]
       );
       const orderId = result.insertId;
       for (const pid of order.productIds) {
