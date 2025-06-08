@@ -12,4 +12,5 @@ const ProductSchema = new Schema<IProduct>({
   categoryId: { type: Schema.Types.ObjectId, ref: "Category", required: true },
 });
 
-export default mongoose.models.Product || mongoose.model<IProduct>("Product", ProductSchema);
+export default mongoose.models.Product ||
+  mongoose.model<IProduct>("Product", ProductSchema);

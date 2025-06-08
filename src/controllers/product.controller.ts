@@ -4,16 +4,26 @@ import { SqlProductModel } from "../sql-models/product.sql-model";
 import { MongoProductService } from "../mongo-models/product/product.service";
 
 // Simple validation helper
-function validateProductInput(body: any) {
+function validateProductInput(
+  body: any,
+  {
+    validationType = "sql",
+  }: {
+    validationType: "sql" | "mongo";
+  }
+) {
   if (typeof body.name !== "string" || !body.name.trim()) {
     return "Name is required";
   }
   if (typeof body.price !== "number" || body.price < 0) {
     return "Price must be a non-negative number";
   }
-  // if (typeof body.categoryId !== "number") {
-  //   return "categoryId must be a number";
-  // }
+  if (typeof body.categoryId !== "string" && validationType === "mongo") {
+    return "categoryId must be a string";
+  }
+  if (typeof body.categoryId !== "number" && validationType === "sql") {
+    return "categoryId must be a number";
+  }
   return null;
 }
 
@@ -25,8 +35,8 @@ export const getAllProducts = async (req: Request, res: Response) => {
 };
 
 export const getProductById = async (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-  const product = await SqlProductModel.getById(id);
+  const id = req.params.id;
+  const product = await MongoProductService.getById(id);
   if (!product) {
     res.status(404).json({ message: "Product not found" });
     return;
@@ -39,15 +49,16 @@ export const createProduct = async (
   res: Response,
   next: NextFunction
 ) => {
-  const error = validateProductInput(req.body);
+  const error = validateProductInput(req.body, {
+    validationType: "mongo",
+  });
   if (error) {
     res.status(400).json({ message: error });
     return;
   }
   try {
-    // const product = await SqlProductModel.create(req.body);
     const product = await MongoProductService.create(req.body);
-    res.status(201).json(product);
+    res.json(product);
   } catch (err) {
     next(err);
   }
@@ -58,19 +69,24 @@ export const updateProduct = async (
   res: Response,
   next: NextFunction
 ) => {
-  const id = Number(req.params.id);
-  const product = await SqlProductModel.getById(id);
+  const id = req.params.id;
+  const product = await MongoProductService.getById(id);
   if (!product) {
     res.status(404).json({ message: "Product not found" });
     return;
   }
-  const error = validateProductInput({ ...product, ...req.body });
+  const error = validateProductInput(
+    { ...product, ...req.body },
+    {
+      validationType: "mongo",
+    }
+  );
   if (error) {
     res.status(400).json({ message: error });
     return;
   }
   try {
-    const updated = await SqlProductModel.update(id, req.body);
+    const updated = await MongoProductService.update(id, req.body);
     res.json(updated);
   } catch (err) {
     next(err);
@@ -82,8 +98,8 @@ export const deleteProduct = async (
   res: Response,
   next: NextFunction
 ) => {
-  const id = Number(req.params.id);
-  const deleted = await SqlProductModel.delete(id);
+  const id = req.params.id;
+  const deleted = await MongoProductService.delete(id);
   if (!deleted) {
     res.status(404).json({ message: "Product not found" });
     return;
