@@ -3,6 +3,10 @@ import productRouter from "./routes/product.routes";
 import categoryRouter from "./routes/category.routes";
 import orderRouter from "./routes/order.routes";
 import userRouter from "./routes/user.routes";
+import {
+  connectMongoose,
+  ensureMongoCollections,
+} from "./mongo-models/mongo-client";
 
 const app = express();
 app.use(express.json());
@@ -26,7 +30,13 @@ app.use((req: Request, res: Response) => {
   res.status(404).json({ message: "Not Found" });
 });
 
-const PORT = process.env.PORT || 3000; // Environment variable
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+async function startServer() {
+  await connectMongoose();
+  await ensureMongoCollections();
+  const PORT = process.env.PORT || 3000; // Environment variable
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+startServer();
